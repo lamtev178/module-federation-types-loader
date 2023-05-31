@@ -1,3 +1,5 @@
+# module-federation-types-loader
+
 ## Prerequisites
 
 In order to use this plugin, you'll need to have the following:
@@ -29,6 +31,19 @@ You'll also need to place a `federation.config.json` in each package being feder
 }
 ```
 
+You'll also need to place a `remotes.config.json` in each package being connect remote containers. It will contain the remote name and exported members. These properties are used in Webpack's `ModuleFederationPlugin` configuration object. An example:
+
+```json
+//remotes.config.json
+
+{
+  "remotes": {
+    "app1": "app1@http://localhost:3001/remoteEntry.js",
+    "app2": "app2@http://localhost:3002/remoteEntry.js"
+  }
+}
+```
+
 It's recommended that you spread these properties into your ModuleFederationPlugin configuration, like so:
 
 ```javascript
@@ -36,6 +51,7 @@ It's recommended that you spread these properties into your ModuleFederationPlug
 
 const deps = require('../package.json').dependencies;
 const federationConfig = require('./federation.config.json');
+const remotesConfig = require("./remotes.config.json");
 
 module.exports = {
     ...
@@ -43,6 +59,7 @@ module.exports = {
     plugins: [
         new ModuleFederationPlugin({
             ...federationConfig,
+            ...remotesConfig,
             filename: "remoteEntry.js",
             shared: {
                 ...deps,
@@ -55,13 +72,15 @@ module.exports = {
 
 ```
 
-Then you can call `npm run test:webpack` from your `scripts` block in your package's `package.json` file:
+Then you can call `npm run download-types` from your `scripts` block in your package's `package.json` file:
+
+> NOTE: Your apps from `remotes.config.json` must be up
 
 ```javascript
 //package.json
 
 scripts: {
-    "start:webpack": "npm run start -workspaces --if-present"
+  "download-types": "lerna run download-types",
 },
 ```
 
