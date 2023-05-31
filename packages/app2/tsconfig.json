@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "sourceMap": true,
+    "strict": true,
+    "baseUrl": ".",
+    "esModuleInterop":true,
+    "paths": {
+      "*": ["./@mf-types/*"]
+    },
+    "jsx": "react-jsx"
+  },
+  "include": ["src/**/*"]
+}

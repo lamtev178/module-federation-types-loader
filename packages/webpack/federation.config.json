@@ -1,0 +1,6 @@
+{
+  "name": "webpackApp",
+  "exposes": {
+    "./App": "./src/App"
+  }
+}

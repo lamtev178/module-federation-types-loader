@@ -1,0 +1,29 @@
+{
+  "name": "webpack-type-generator",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "download-types": "lerna run download-types",
+    "start": "lerna run --parallel start",
+    "build:webpack": "npm run build -workspaces --if-present"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@touk/federated-types": "^1.2.0",
+    "copy-webpack-plugin": "^11.0.0",
+    "html-webpack-plugin": "^5.5.1",
+    "lerna": "^6.6.2",
+    "vite": "^4.3.9",
+    "webpack-cli": "^5.1.1"
+  },
+  "workspaces": {
+    "packages": [
+      "packages/app1",
+      "packages/app2",
+      "packages/webpack"
+    ]
+  }
+}
