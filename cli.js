@@ -51,34 +51,46 @@ const findRemotesConfig = (base) => {
 const configPathArg = getArg("--config");
 const configPath = configPathArg ? path.resolve(configPathArg) : null;
 
-const remotesConfigPath = configPath || findRemotesConfig("./");
-
-if (remotesConfigPath === undefined) {
-  console.error(
-    `ERROR: Unable to find a remotes.config.json file in this package`
-  );
+if (configPath && !fs.existsSync(configPath)) {
+  console.error(`ERROR: Unable to find a ${configPath} file in this package`);
   process.exit(1);
 }
+
+const remotesConfigPath = configPath || findRemotesConfig("./");
 
 console.log(`Using config file: ${remotesConfigPath}`);
 
 const remotesConfig = require(remotesConfigPath);
 
+const outDirArg = getArg("--outputDir");
+
+const outputDir = outDirArg ? path.resolve("./", outDirArg) : "federated-types";
+
 try {
   Object.entries(remotesConfig.remotes).forEach(([key, val]) => {
-    const filePath = `federated-types/${key}.d.ts`;
-
-    if (!fs.existsSync("federated-types/")) {
-      fs.mkdirSync("federated-types/");
-      console.log("Create federated-types dir");
-    }
-    const file = fs.createWriteStream(filePath);
+    const filePath = `${outputDir}/${key}.d.ts`;
 
     const url = getFederationTypesUrl(val);
 
     console.log("GET: ", url);
 
     http.get(url, (response) => {
+      const { statusCode } = response;
+      console.log("STATUS", statusCode);
+
+      if (statusCode !== 200) {
+        console.error(
+          `Request with url: ${url} Failed.\n` + `Status Code: ${statusCode}`
+        );
+        return;
+      }
+
+      if (!fs.existsSync(outputDir)) {
+        fs.mkdirSync(outputDir);
+        console.log(`${outputDir} dir`);
+      }
+      const file = fs.createWriteStream(filePath);
+
       response.pipe(file);
 
       file.on("finish", () => {
@@ -90,5 +102,5 @@ try {
 
   console.log("Success!");
 } catch (e) {
-  console.error("ERROR: ", e);
+  console.error("ERRORERRORERRORERRORERROR: ");
 }
