@@ -1,7 +1,11 @@
 {
   "name": "module-federation-types-loader",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Downloads types from child apps",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lamtev178/module-federation-types-loader"
+  },
   "bin": {
     "download-types": "./cli.js"
   },
