@@ -6,11 +6,15 @@
     "download-types": "./cli.js"
   },
   "scripts": {
-    "download-types": "lerna run download-types --outputDir my-dir",
+    "download-types": "lerna run download-types",
     "start": "lerna run --parallel start",
     "build:webpack": "npm run build -workspaces --if-present"
   },
-  "keywords": [],
+  "keywords": [
+    "module-federation",
+    "typescript",
+    "typings"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {

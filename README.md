@@ -1,9 +1,14 @@
 # module-federation-types-loader
 
+[![npm version](https://badge.fury.io/js/module-federation-types-loader.svg)](https://badge.fury.io/js/module-federation-types-loader)
+
+This package exposes a node CLI command called `download-types`. Once installed, you can run that command within a package, and it will downloads types from child apps specified in `remotes.config.json`
+
 ## Prerequisites
 
 In order to use this plugin, you'll need to have the following:
 
+- @touk/federated-types
 - Webpack 5
 - TypeScript
 - Module Federation plugin (version 5 or later)
@@ -13,8 +18,9 @@ In order to use this plugin, you'll need to have the following:
 You'll need to install this module then execute type-generator for parent App with `npm run download-types` and start:
 
 ```
+npm i -D @touk/federated-types
 npm install
-npm run create-types
+npm run download-types
 npm run start
 ```
 
@@ -90,7 +96,7 @@ If you would like to specify custom path to the config or custom output dir, you
 //package.json
 
 scripts: {
-    "download-types": "../../../cli.js --outputDir my-dir --config my-config.json"
+    "download-types": "download-types --outputDir my-dir --config my-config.json"
 }
 ```
 
