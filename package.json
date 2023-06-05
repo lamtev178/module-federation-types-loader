@@ -1,8 +1,10 @@
 {
-  "name": "webpack-type-generator",
+  "name": "module-federation-types-loader",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Downloads types from child apps",
+  "bin": {
+    "download-types": "./cli.js"
+  },
   "scripts": {
     "download-types": "lerna run download-types --outputDir my-dir",
     "start": "lerna run --parallel start",
