@@ -84,6 +84,16 @@ scripts: {
 },
 ```
 
+If you would like to specify custom path to the config or custom output dir, you can pass `--config` and `--outputDir` parameter like so:
+
+```javascript
+//package.json
+
+scripts: {
+    "download-types": "../../../cli.js --outputDir my-dir --config my-config.json"
+}
+```
+
 This script will generate `index.d.ts` and package named file (in our case `webpackApp.d.ts`) files and resulting bundle file is ready to be deployed on a server.
 
 ```typescript

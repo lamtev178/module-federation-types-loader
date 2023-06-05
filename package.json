@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "download-types": "lerna run download-types",
+    "download-types": "lerna run download-types --outputDir my-dir",
     "start": "lerna run --parallel start",
     "build:webpack": "npm run build -workspaces --if-present"
   },
@@ -16,9 +16,9 @@
   },
   "workspaces": {
     "packages": [
-      "packages/app1",
-      "packages/app2",
-      "packages/webpack"
+      "examples/webpack/app1",
+      "examples/webpack/app2",
+      "examples/webpack/parentApp"
     ]
   },
   "devDependencies": {

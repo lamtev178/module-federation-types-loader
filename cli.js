@@ -10,8 +10,6 @@ const getArg = (argName) => {
 };
 
 function getFederationTypesUrl(remotesUrl) {
-  //app1@http://localhost:3001/remoteEntry.js -> http://localhost:3001/federated-types/app1.d.ts
-
   const fileName = remotesUrl.split("@")[0];
   remotesUrl = remotesUrl.split("@")[1];
 
