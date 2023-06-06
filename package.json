@@ -1,6 +1,6 @@
 {
   "name": "module-federation-types-loader",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Downloads types from child apps",
   "repository": {
     "type": "git",
@@ -20,9 +20,9 @@
     "typings"
   ],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
-    "lerna": "^6.6.2"
+    "@touk/federated-types": "^1.2.0"
   },
   "workspaces": {
     "packages": [
@@ -32,6 +32,6 @@
     ]
   },
   "devDependencies": {
-    "@touk/federated-types": "^1.2.0"
+    "lerna": "^6.6.2"
   }
 }
