@@ -33,16 +33,7 @@ You'll also need to place a `federation.config.json` in each package being feder
   "name": "app2",
   "exposes": {
     "./Button": "./app2/Button"
-  }
-}
-```
-
-You'll also need to place a `remotes.config.json` in each package being connect remote containers. It will contain the remote name and exported members. These properties are used in Webpack's `ModuleFederationPlugin` configuration object. An example:
-
-```json
-//remotes.config.json
-
-{
+  },
   "remotes": {
     "app1": "app1@http://localhost:3001/remoteEntry.js",
     "app2": "app2@http://localhost:3002/remoteEntry.js"
@@ -57,7 +48,6 @@ It's recommended that you spread these properties into your ModuleFederationPlug
 
 const deps = require('../package.json').dependencies;
 const federationConfig = require('./federation.config.json');
-const remotesConfig = require("./remotes.config.json");
 
 module.exports = {
     ...
@@ -65,7 +55,6 @@ module.exports = {
     plugins: [
         new ModuleFederationPlugin({
             ...federationConfig,
-            ...remotesConfig,
             filename: "remoteEntry.js",
             shared: {
                 ...deps,
@@ -106,16 +95,16 @@ This script will generate `index.d.ts` and package named file (in our case `webp
 //webpackApp.d.ts
 
 /// <reference types="react" />
-declare module "webpackApp/UI/Button/Button" {
-  import React from "react";
+declare module 'webpackApp/UI/Button/Button' {
+  import React from 'react';
   interface IButton {
     children: string | React.ReactNode;
   }
   export default function Button({ children }: IButton): React.JSX.Element;
 }
-declare module "webpackApp/App" {
-  import React from "react";
-  import "./App.scss";
+declare module 'webpackApp/App' {
+  import React from 'react';
+  import './App.scss';
   const App: () => React.JSX.Element;
   export default App;
 }
