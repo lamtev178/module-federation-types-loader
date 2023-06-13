@@ -1,45 +1,45 @@
-const HtmlWebpackPlugin = require("html-webpack-plugin");
-const { ModuleFederationPlugin } = require("webpack").container;
-const CopyWebpackPlugin = require("copy-webpack-plugin");
-const federationConfig = require("./federation.config.json");
-const path = require("path");
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const { ModuleFederationPlugin } = require('webpack').container;
+const CopyWebpackPlugin = require('copy-webpack-plugin');
+const federationConfig = require('./federation.config.json');
+const path = require('path');
 
-const pkg = require("./package.json");
+const pkg = require('./package.json');
 
 module.exports = {
-  entry: "./src/index",
-  mode: "development",
+  entry: './src/index',
+  mode: 'development',
   devServer: {
     static: {
-      directory: path.join(__dirname, "dist"),
+      directory: path.join(__dirname, 'dist'),
     },
     port: 3002,
   },
   output: {
-    publicPath: "auto",
+    publicPath: 'auto',
   },
   resolve: {
-    extensions: [".ts", ".tsx", ".js"],
+    extensions: ['.ts', '.tsx', '.js'],
   },
   module: {
     rules: [
       {
         test: /\.tsx?$/,
-        loader: "babel-loader",
+        loader: 'babel-loader',
         exclude: /node_modules/,
         options: {
-          presets: ["@babel/preset-react", "@babel/preset-typescript"],
+          presets: ['@babel/preset-react', '@babel/preset-typescript'],
         },
       },
     ],
   },
   plugins: [
     new CopyWebpackPlugin({
-      patterns: [{ from: "./federated-types", to: "./federated-types" }],
+      patterns: [{ from: './federated-types', to: './federated-types' }],
     }),
     new ModuleFederationPlugin({
       ...federationConfig,
-      filename: "remoteEntry.js",
+      filename: 'remoteEntry.js',
       shared: [
         {
           react: {
@@ -48,15 +48,15 @@ module.exports = {
           },
         },
         {
-          "react-dom": {
+          'react-dom': {
             singleton: true,
-            requiredVersion: pkg.dependencies["react-dom"],
+            requiredVersion: pkg.dependencies['react-dom'],
           },
         },
       ],
     }),
     new HtmlWebpackPlugin({
-      template: "./public/index.html",
+      template: './public/index.html',
     }),
   ],
 };

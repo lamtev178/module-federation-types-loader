@@ -1,10 +1,10 @@
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const CopyWebpackPlugin = require("copy-webpack-plugin");
-const { ModuleFederationPlugin } = require("webpack").container;
-const federationConfig = require("./federation.config.json");
+const CopyWebpackPlugin = require('copy-webpack-plugin');
+const { ModuleFederationPlugin } = require('webpack').container;
+const federationConfig = require('./federation.config.json');
 const path = require('path');
 
-const pkg = require("./package.json");
+const pkg = require('./package.json');
 
 module.exports = {
   entry: './src/index',
@@ -35,31 +35,31 @@ module.exports = {
   },
   plugins: [
     new CopyWebpackPlugin({
-      patterns: [{ from: "./federated-types", to: "./federated-types" }],
+      patterns: [{ from: './federated-types', to: './federated-types' }],
     }),
     new ModuleFederationPlugin({
-        ...federationConfig,
-        filename: 'remoteEntry.js',
-        remotes: {
-          app2: 'app2@http://localhost:3002/remoteEntry.js',
-        },
-        shared: [{
+      ...federationConfig,
+      filename: 'remoteEntry.js',
+      remotes: {
+        app2: 'app2@http://localhost:3002/remoteEntry.js',
+      },
+      shared: [
+        {
           react: {
             singleton: true,
             requiredVersion: pkg.dependencies.react,
-          }},
-          {
-            'react-dom': {
-              singleton: true,
-              requiredVersion: pkg.dependencies['react-dom'],
-            },
-          }
-        ],
+          },
+        },
+        {
+          'react-dom': {
+            singleton: true,
+            requiredVersion: pkg.dependencies['react-dom'],
+          },
+        },
+      ],
     }),
     new HtmlWebpackPlugin({
       template: './public/index.html',
     }),
   ],
 };
-
-
