@@ -10,6 +10,12 @@
     "download-types": "./cli.js"
   },
   "scripts": {
+    "lint": "run-s -csn lint:eslint lint:prettier",
+    "fix": "run-s -csn fix:eslint fix:prettier",
+    "lint:prettier": "prettier --check .",
+    "fix:prettier": "prettier --write .",
+    "lint:eslint": "eslint --ext .ts,.js .",
+    "fix:eslint": "eslint --ext .ts,.js . --fix",
     "download-types": "lerna run download-types",
     "start": "lerna run --parallel start",
     "build:webpack": "npm run build -workspaces --if-present"
@@ -32,6 +38,11 @@
     ]
   },
   "devDependencies": {
-    "lerna": "^6.6.2"
+    "lerna": "^6.6.2",
+    "@typescript-eslint/eslint-plugin": "^5.48.0",
+    "@typescript-eslint/parser": "^5.48.0",
+    "npm-run-all": "^4.1.5",
+    "eslint-config-prettier": "^8.6.0",
+    "prettier": "^2.8.1"
   }
 }
