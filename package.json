@@ -1,6 +1,6 @@
 {
   "name": "module-federation-types-loader",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Downloads types from child apps",
   "repository": {
     "type": "git",
