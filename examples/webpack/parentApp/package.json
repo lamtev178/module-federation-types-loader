@@ -17,10 +17,9 @@
     "webpack-dev-server": "^4.13.3"
   },
   "scripts": {
-    "download-types": "../../../cli.js",
-    "start": "npm run generate:federated-types && webpack-cli serve",
-    "build": "npm run generate:federated-types && webpack --config webpack.prod.js",
-    "generate:federated-types": "make-federated-types --outputDir ./federated-types",
+    "download-types": "../../../cli.js --outputDir ./federated-types",
+    "start": "npm run download-types && webpack-cli serve",
+    "build": "npm run download-types && webpack --config webpack.prod.js",
     "serve": "serve dist -p 3003"
   },
   "dependencies": {

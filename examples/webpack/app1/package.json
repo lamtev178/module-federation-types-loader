@@ -19,7 +19,7 @@
   "scripts": {
     "start": "npm run generate:federated-types && webpack-cli serve",
     "build": "npm run generate:federated-types && webpack --mode production",
-    "generate:federated-types": "make-federated-types --outputDir ./federated-types",
+    "generate:federated-types": "../../../cli.js --outputDir ./federated-types",
     "serve": "serve dist -p 3001",
     "clean": "rm -rf dist"
   },

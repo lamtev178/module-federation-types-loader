@@ -2,31 +2,21 @@
 
 [![npm version](https://badge.fury.io/js/module-federation-types-loader.svg)](https://badge.fury.io/js/module-federation-types-loader)
 
-This package exposes a node CLI command called `download-types`. Once installed, you can run that command within a package, and it will downloads types from child apps specified in `remotes.config.json`
+This package exposes a node CLI command called `download-types`. Once installed, you can run that command within a package, and it will downloads types from child apps specified in `federation.config.json`
 
 ## Prerequisites
 
 In order to use this plugin, you'll need to have the following:
 
-- @touk/federated-types
 - Webpack 5
 - TypeScript
 - Module Federation plugin (version 5 or later)
 
-## How is this used?
+#
 
-You'll need to install this module then execute type-generator for parent App with `npm run download-types` and start:
+You need to place a `federation.config.json` in each package being federated. It will contain the remote name and exported members. These properties are used in Webpack's `ModuleFederationPlugin` configuration object. An example:
 
-```
-npm i -D @touk/federated-types
-npm install
-npm run download-types
-npm run start
-```
-
-You'll also need to place a `federation.config.json` in each package being federated. It will contain the remote name and exported members. These properties are used in Webpack's `ModuleFederationPlugin` configuration object. An example:
-
-```json
+```javascript
 //federation.config.json
 
 {
@@ -50,26 +40,21 @@ const deps = require('../package.json').dependencies;
 const federationConfig = require('./federation.config.json');
 
 module.exports = {
-    ...
-
-    plugins: [
-        new ModuleFederationPlugin({
-            ...federationConfig,
-            filename: "remoteEntry.js",
-            shared: {
-                ...deps,
-            },
-        }),
-    ],
-
-    ...
-}
-
+  plugins: [
+    new ModuleFederationPlugin({
+      ...federationConfig,
+      filename: 'remoteEntry.js',
+      shared: {
+        ...deps,
+      },
+    }),
+  ],
+};
 ```
 
 Then you can call `npm run download-types` from your `scripts` block in your package's `package.json` file:
 
-> NOTE: Your apps from `remotes.config.json` must be up
+> NOTE: Apps from `federation.config.json` must be up
 
 ```javascript
 //package.json
