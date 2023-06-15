@@ -54,13 +54,14 @@ function getModuleDeclareName(exposeName) {
   return path.join(federationConfig.name, exposeName).replace(/[\\/]/g, '/');
 }
 
-function generateTypes(config) {
+function generateTypes(config, outputDir) {
   if (!config.exposes) return;
 
   const files = Object.values(config.exposes);
   const keys = Object.keys(config.exposes);
 
-  const outFile = `${config.name}.d.ts`;
+  const outFile = path.resolve(outputDir, `${config.name}.d.ts`);
+
   if (fs.existsSync(outFile)) {
     fs.unlinkSync(outFile);
   }
@@ -111,11 +112,6 @@ function generateTypes(config) {
   outputDirs.forEach((_outputDir) => {
     const _outFile = path.resolve(_outputDir, `${federationConfig.name}.d.ts`);
     console.log('writing typing file:', _outFile);
-
-    if (!fs.existsSync(_outputDir)) {
-      fs.mkdirSync(_outputDir);
-      console.log(`${_outputDir} dir`);
-    }
 
     fs.writeFileSync(_outFile, typing);
     console.debug(`using output dir: ${_outputDir}`);
@@ -174,12 +170,13 @@ function downloadTypes(remotes) {
 
 //@TODO: return config file
 function federationConfigFile(config) {
-  if (config && !fs.existsSync(config)) {
-    console.error(`ERROR: Unable to find a provided config: ${config}`);
+  const configPath = config ? path.resolve(config) : null;
+  if (configPath && !fs.existsSync(configPath)) {
+    console.error(`ERROR: Unable to find a provided config: ${configPath}`);
     process.exit(1);
   }
 
-  const federationConfigPath = config || findFederationConfig('./');
+  const federationConfigPath = configPath || findFederationConfig('./');
 
   if (federationConfigPath === undefined) {
     console.error(`ERROR: Unable to find a federation.config.json file in this package`);
@@ -228,6 +225,8 @@ if (argv.help) {
   process.exit(0);
 }
 
+const outputDir = argv.outputDir ? path.resolve('./', argv.outputDir) : nodeModulesOutputDir;
+
 const outputDirs =
   argv.outputDir !== nodeModulesOutputDir && argv.saveToNodeModules
     ? [nodeModulesOutputDir, argv.outputDir]
@@ -237,7 +236,7 @@ const federationConfig = federationConfigFile(argv.config);
 
 function main() {
   try {
-    generateTypes(federationConfig);
+    generateTypes(federationConfig, outputDir);
     downloadTypes(federationConfig.remotes);
     console.debug('Success!');
   } catch (e) {
