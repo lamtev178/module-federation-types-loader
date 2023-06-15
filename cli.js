@@ -112,6 +112,11 @@ function generateTypes(config) {
     const _outFile = path.resolve(_outputDir, `${federationConfig.name}.d.ts`);
     console.log('writing typing file:', _outFile);
 
+    if (!fs.existsSync(_outputDir)) {
+      fs.mkdirSync(_outputDir);
+      console.log(`${_outputDir} dir`);
+    }
+
     fs.writeFileSync(_outFile, typing);
     console.debug(`using output dir: ${_outputDir}`);
 

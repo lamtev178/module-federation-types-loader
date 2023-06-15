@@ -25,8 +25,7 @@ You need to place a `federation.config.json` in each package being federated. It
     "./Button": "./app2/Button"
   },
   "remotes": {
-    "app1": "app1@http://localhost:3001/remoteEntry.js",
-    "app2": "app2@http://localhost:3002/remoteEntry.js"
+    "app1": "app1@http://localhost:3001/remoteEntry.js"
   }
 }
 ```
@@ -60,9 +59,15 @@ Then you can call `npm run download-types` from your `scripts` block in your pac
 //package.json
 
 scripts: {
-  "download-types": "lerna run download-types",
+  "download-types": "npm run download-types",
 },
 ```
+
+#
+
+> Use `--help` for more info
+
+#
 
 If you would like to specify custom path to the config or custom output dir, you can pass `--config` and `--outputDir` parameter like so:
 
@@ -70,7 +75,7 @@ If you would like to specify custom path to the config or custom output dir, you
 //package.json
 
 scripts: {
-    "download-types": "download-types --outputDir my-dir --config my-config.json"
+    "download-types": "download-types -o my-dir -c my-config.json"
 }
 ```
 
@@ -95,7 +100,7 @@ declare module 'webpackApp/App' {
 }
 ```
 
-This file will be able by `localhost:3003/federated-types/yourModuleName`
+This file will be able by `localhost:3002/federated-types/yourModuleName`
 
 Where yourModuleName - `webpackApp.d.ts`
 
