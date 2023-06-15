@@ -1,7 +1,0 @@
-{
-  "name": "app2",
-  "exposes": {
-    "./App": "./src/App",
-    "./Button": "./src/Button"
-  }
-}

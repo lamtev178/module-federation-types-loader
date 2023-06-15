@@ -4,33 +4,20 @@ const path = require('path');
 const fs = require('fs');
 const findNodeModules = require('find-node-modules');
 const ts = require('typescript');
+const minimist = require('minimist');
 const http = require('http');
-
-const formatHost = {
-  getCurrentDirectory: ts.sys.getCurrentDirectory,
-  getNewLine: () => ts.sys.newLine,
-};
+const pkg = require('./package.json');
 
 function reportDiagnostic(diagnostic) {
   console.log(
     'TS Error',
     diagnostic.code,
     ':',
-    ts.flattenDiagnosticMessageText(diagnostic.messageText, formatHost.getNewLine()),
+    ts.flattenDiagnosticMessageText(diagnostic.messageText, ts.sys.newLine),
   );
 }
 
-const [nodeModules] = findNodeModules({ cwd: process.argv[1], relative: false });
-
-const hasArg = (argName) => {
-  const argIndex = process.argv.indexOf(argName);
-  return argIndex !== -1;
-};
-const getArg = (argName) => {
-  const argIndex = process.argv.indexOf(argName);
-  return argIndex !== -1 ? process.argv[argIndex + 1] : null;
-};
-
+//@TODO: takes actual url address from remote app
 const getFederationTypesUrl = (remotesUrl) => {
   const fileName = remotesUrl.split('@')[0];
   remotesUrl = remotesUrl.split('@')[1];
@@ -42,18 +29,6 @@ const getFederationTypesUrl = (remotesUrl) => {
 
   return remotesUrl.replace(/remoteEntry.js/, `federated-types/${fileName}.d.ts`);
 };
-
-const nodeModulesOutputDir = path.resolve(nodeModules, '@types/__federated_types/');
-const saveToNodeMoulesArg = hasArg('--saveToNodeModules');
-const outDirArg = getArg('--outputDir');
-
-const outputDir = outDirArg ? path.resolve('./', outDirArg) : nodeModulesOutputDir;
-
-const outputDirs =
-  outputDir !== nodeModulesOutputDir && saveToNodeMoulesArg ? [nodeModulesOutputDir, outputDir] : [outputDir];
-
-const configPathArg = getArg('--config');
-const configPath = configPathArg ? path.resolve(configPathArg) : null;
 
 const findFederationConfig = (base) => {
   let files = fs.readdirSync(base);
@@ -74,37 +49,24 @@ const findFederationConfig = (base) => {
   }
 };
 
-if (configPath && !fs.existsSync(configPath)) {
-  console.error(`ERROR: Unable to find a provided config: ${configPath}`);
-  process.exit(1);
-}
-
-const federationConfigPath = configPath || findFederationConfig('./');
-
-if (federationConfigPath === undefined) {
-  console.error(`ERROR: Unable to find a federation.config.json file in this package`);
-  process.exit(1);
-}
-
-console.log(`Using config file: ${federationConfigPath}`);
-
-const federationConfig = require(federationConfigPath);
-const compileFiles = Object.values(federationConfig.exposes);
-const compileKeys = Object.keys(federationConfig.exposes);
-
 function getModuleDeclareName(exposeName) {
-  // windows paths 🤦
+  // windows paths
   return path.join(federationConfig.name, exposeName).replace(/[\\/]/g, '/');
 }
 
-try {
-  const outFile = path.resolve(outputDir, `${federationConfig.name}.d.ts`);
+function generateTypes(config) {
+  if (!config.exposes) return;
+
+  const files = Object.values(config.exposes);
+  const keys = Object.keys(config.exposes);
+
+  const outFile = `${config.name}.d.ts`;
   if (fs.existsSync(outFile)) {
     fs.unlinkSync(outFile);
   }
 
-  // write the typings file
-  const program = ts.createProgram(compileFiles, {
+  //@TODO: write the typings file
+  const program = ts.createProgram(files, {
     outFile,
     declaration: true,
     emitDeclarationOnly: true,
@@ -132,12 +94,11 @@ try {
 
   moduleNames.forEach((name) => {
     // exposeName - relative name of exposed component (if not found - just take moduleName)
-    const [exposeName = name, ...aliases] = compileKeys.filter((key) => federationConfig.exposes[key].endsWith(name));
+    const [exposeName = name, ...aliases] = keys.filter((key) => federationConfig.exposes[key].endsWith(name));
     const regex = RegExp(`"${name}"`, 'g');
 
     const moduleDeclareName = getModuleDeclareName(exposeName);
 
-    // language=TypeScript
     const createAliasModule = (name) => `
             declare module "${getModuleDeclareName(name)}" {
                 export * from "${moduleDeclareName}"
@@ -152,21 +113,9 @@ try {
     console.log('writing typing file:', _outFile);
 
     fs.writeFileSync(_outFile, typing);
-
     console.debug(`using output dir: ${_outputDir}`);
-    // if we are writing to the node_modules/@types directory, add a package.json file
-    if (_outputDir.includes(path.join('node_modules', '@types'))) {
-      const packageJsonPath = path.resolve(_outputDir, 'package.json');
 
-      if (!fs.existsSync(packageJsonPath)) {
-        console.debug('writing package.json:', packageJsonPath);
-        fs.copyFileSync(path.resolve(__dirname, 'typings.package.tmpl.json'), packageJsonPath);
-      } else {
-        console.debug(packageJsonPath, 'already exists');
-      }
-    }
-
-    // write/update the index.d.ts file
+    //@TODO: write/update the index.d.ts file
     const indexPath = path.resolve(_outputDir, 'index.d.ts');
     const importStatement = `export * from './${federationConfig.name}';`;
 
@@ -181,28 +130,32 @@ try {
       }
     }
   });
-  if (federationConfig.remotes) {
-    Object.entries(federationConfig.remotes).forEach(([key, val]) => {
-      const filePath = `${outputDir}/${key}.d.ts`;
+}
 
-      const url = getFederationTypesUrl(val);
+//@TODO: download type files from all remote apps for all outputDirs
+function downloadTypes(remotes) {
+  if (!remotes || remotes.length === 0) return;
 
-      console.log('GET: ', url);
+  Object.entries(remotes).forEach(([key, val]) => {
+    const url = getFederationTypesUrl(val);
+    console.log('GET: ', url);
 
-      http.get(url, (response) => {
-        const { statusCode } = response;
+    http.get(url, (response) => {
+      const { statusCode } = response;
 
-        if (statusCode !== 200) {
-          console.error(`Request with url: ${url} Failed.\n` + `Status Code: ${statusCode}`);
-          return;
+      if (statusCode !== 200) {
+        console.error(`Request with url: ${url} Failed.\n` + `Status Code: ${statusCode}`);
+        return;
+      }
+      outputDirs.forEach((_outputDir) => {
+        const _outFile = path.resolve(_outputDir, `${key}.d.ts`);
+        console.log('writing typing file:', _outFile);
+
+        if (!fs.existsSync(_outputDir)) {
+          fs.mkdirSync(_outputDir);
+          console.log(`${_outputDir} dir`);
         }
-
-        if (!fs.existsSync(outputDir)) {
-          fs.mkdirSync(outputDir);
-          console.log(`${outputDir} dir`);
-        }
-        const file = fs.createWriteStream(filePath);
-
+        const file = fs.createWriteStream(_outFile);
         response.pipe(file);
 
         file.on('finish', () => {
@@ -211,9 +164,81 @@ try {
         });
       });
     });
-  }
-  console.debug('Success!');
-} catch (e) {
-  console.error(`ERROR:`, e);
-  process.exit(1);
+  });
 }
+
+//@TODO: return config file
+function federationConfigFile(config) {
+  if (config && !fs.existsSync(config)) {
+    console.error(`ERROR: Unable to find a provided config: ${config}`);
+    process.exit(1);
+  }
+
+  const federationConfigPath = config || findFederationConfig('./');
+
+  if (federationConfigPath === undefined) {
+    console.error(`ERROR: Unable to find a federation.config.json file in this package`);
+    process.exit(1);
+  }
+
+  console.log(`Using config file: ${federationConfigPath}`);
+  return require(federationConfigPath);
+}
+
+const [nodeModules] = findNodeModules({ cwd: process.argv[1], relative: false });
+const nodeModulesOutputDir = path.resolve(nodeModules, '@types/__federated_types/');
+
+const args = process.argv.slice(2);
+const argv = minimist(args, {
+  string: ['outputDir', 'config'],
+  boolean: ['saveToNodeModules', 'help'],
+  alias: {
+    outputDir: ['o'],
+    config: ['c'],
+    saveToNodeModules: ['s'],
+    registry: ['r'],
+    help: ['h'],
+  },
+  default: {
+    saveToNodeModules: false,
+    config: null,
+    outputDir: nodeModulesOutputDir,
+  },
+});
+
+if (argv.help) {
+  console.log(
+    [
+      `Version: ${pkg.version}`,
+      'Example: download-types -o my-dir -c my-config.json',
+      '',
+      'Usage: download-types [options]',
+      'Options:',
+      '  -h, --help                        Print this message',
+      '  -o, --outputDir                   Write into this dir',
+      '  -c, --config PATH_TO_FILE         Use specified config file',
+      '  -s, --saveToNodeModules           To save in node_modules and output-dir',
+    ].join('\n'),
+  );
+  process.exit(0);
+}
+
+const outputDirs =
+  argv.outputDir !== nodeModulesOutputDir && argv.saveToNodeModules
+    ? [nodeModulesOutputDir, argv.outputDir]
+    : [argv.outputDir];
+
+const federationConfig = federationConfigFile(argv.config);
+
+function main() {
+  try {
+    generateTypes(federationConfig);
+    downloadTypes(federationConfig.remotes);
+    console.debug('Success!');
+  } catch (e) {
+    console.error(`ERROR:`, e);
+    process.exit(1);
+  }
+}
+
+main();

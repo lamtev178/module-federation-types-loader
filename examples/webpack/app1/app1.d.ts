@@ -1,4 +1,4 @@
-declare module 'app1/App' {
+declare module 'App' {
   const App: () => JSX.Element;
   export default App;
 }
